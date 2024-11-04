@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 
 class LoginRegisterController extends Controller
 {
@@ -39,18 +40,32 @@ class LoginRegisterController extends Controller
 
     public function store(Request $request)
 {
+   
+
     $validatedData = $request->validate([
         'name' => 'required|string|max:255',
         'email' => 'required|string|email|max:255|unique:users',
         'password' => 'required|string|min:8|confirmed',
         'role' => 'required|in:user,admin', // validasi role
+        'photo' => 'image|nullable|max:1999'
     ]);
+
+    if ($request->hasFile('photo')) {
+        $filenameWithExt = $request->file('photo')->getClientOriginalName();
+        $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+        $extension = $request->file('photo')->getClientOriginalExtension();
+        $filenameSimpan = $filename . '_' . time() . '.' . $extension;
+        $path = $request->file('photo')->storeAs('photos', $filenameSimpan);
+    } else {
+        $path = null;
+    }
 
     $user = new User();
     $user->name = $validatedData['name'];
     $user->email = $validatedData['email'];
     $user->password = bcrypt($validatedData['password']);
     $user->level = $validatedData['role']; // simpan nilai role ke kolom level
+    $user->photo = $path;
     $user->save();
 
     return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
@@ -140,3 +155,4 @@ class LoginRegisterController extends Controller
             ->withSuccess('You have successfully logged out.');
     }
 }
+

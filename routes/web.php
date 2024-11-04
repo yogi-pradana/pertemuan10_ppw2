@@ -1,7 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Auth\LoginRegisterController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\SendEmailController;
+
+
+
+
+Storage::disk('local')->put('file.txt', 'Contents');
 
 
 /*
@@ -37,4 +45,13 @@ Route::middleware('guest')->group(function () {
 Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/dashboard', [LoginRegisterController::class, 'dashboard'])->name('dashboard');
     Route::post('/logout', [LoginRegisterController::class, 'logout'])->name('logout');
+    // Route::get('/user-list', [UserController::class, 'user-list'])->name('user-list');
+
+    Route::get('/users', [UserController::class, 'index'])->name('users');
+    Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
+    Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
+    Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
 });
+
+Route::get('/send-mail', [SendEmailController::class,
+'index'])->name('kirim-email');

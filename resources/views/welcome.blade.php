@@ -27,6 +27,7 @@
         </style>
     </head>
     <body class="antialiased">
+    <a href="{{ asset('storage/file.txt') }}" target="_blank">Lihat file</a>
         <div class="mt-16">
                 @if($message = Session::get('success'))
                 <div class="alert alert-success">
