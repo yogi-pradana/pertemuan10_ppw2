@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Storage;
 use App\Http\Controllers\Auth\LoginRegisterController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SendEmailController;
+use App\Http\Controllers\GalleryController;
 
 
 
@@ -40,6 +41,8 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [LoginRegisterController::class, 'register'])->name('register');
     Route::post('/store', [LoginRegisterController::class, 'store'])->name('store');
     Route::post('/authenticate', [LoginRegisterController::class, 'authenticate'])->name('authenticate');
+    // Route::resource('/gallery', GalleryController::class);
+    // Route::get('/gallery', [GalleryController::class, 'create'])->name('upload');
 }); 
 
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -51,6 +54,8 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::get('/users/{id}/edit', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/users/{id}', [UserController::class, 'update'])->name('users.update');
     Route::delete('/users/{id}', [UserController::class, 'destroy'])->name('users.destroy');
+
+    Route::resource('/gallery', GalleryController::class);
 });
 
 Route::get('/send-mail', [SendEmailController::class,
