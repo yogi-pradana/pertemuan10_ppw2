@@ -8,6 +8,10 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\SendEmail;
+
+
 
 class LoginRegisterController extends Controller
 {
@@ -67,6 +71,8 @@ class LoginRegisterController extends Controller
     $user->level = $validatedData['role']; // simpan nilai role ke kolom level
     $user->photo = $path;
     $user->save();
+
+    Mail::to($user->email)->send(new SendEmail($user));
 
     return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
 }

@@ -41,8 +41,9 @@ Route::middleware('guest')->group(function () {
     Route::get('/register', [LoginRegisterController::class, 'register'])->name('register');
     Route::post('/store', [LoginRegisterController::class, 'store'])->name('store');
     Route::post('/authenticate', [LoginRegisterController::class, 'authenticate'])->name('authenticate');
-    // Route::resource('/gallery', GalleryController::class);
-    // Route::get('/gallery', [GalleryController::class, 'create'])->name('upload');
+    
+    Route::get('/send-mail', [SendEmailController::class,'index'])->name('kirim-email');
+    Route::post('/post-email', [SendEmailController::class,'store'])->name('post-email');
 }); 
 
 Route::middleware(['auth', 'admin'])->group(function () {
@@ -58,5 +59,3 @@ Route::middleware(['auth', 'admin'])->group(function () {
     Route::resource('/gallery', GalleryController::class);
 });
 
-Route::get('/send-mail', [SendEmailController::class,
-'index'])->name('kirim-email');
