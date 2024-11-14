@@ -10,8 +10,8 @@
                         @foreach($galleries as $gallery)
                         <div class="col-sm-2">
                             <div>
-                                <a class="example-image-link" href="{{ asset('storage/'.$gallery->picture) }}" data-lightbox="roadtrip" data-title="{{ $gallery->description }}">
-                                    <img class="example-image img-fluid mb-2" src="{{ asset('storage/'.$gallery->picture) }}" alt="image-{{ $gallery->id }}">
+                                <a class="example-image-link" href="{{ asset('storage/public/images/'.$gallery->picture) }}" data-lightbox="roadtrip" data-title="{{ $gallery->description }}">
+                                    <img class="example-image img-fluid mb-2" src="{{ asset('storage/public/images/'.$gallery->picture) }}" alt="image-{{ $gallery->id }}">
                                 </a>
                             </div>
                             <a href="{{ route('gallery.edit', $gallery->id) }}" class="btn btn-warning btn-sm mt-2">Edit</a>
