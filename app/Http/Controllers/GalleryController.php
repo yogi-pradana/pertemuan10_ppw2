@@ -3,15 +3,11 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use App\Models\Post;
+use Illuminate\Support\Facades\Storage;
 
 class GalleryController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-    }
     /**
      * Display a listing of the resource.
      */
@@ -19,7 +15,7 @@ class GalleryController extends Controller
     {
         $data = array(
             'id' => "posts",
-            'menu' => 'Gallery',
+            'menu' => "Gallery",
             'galleries' => Post::where('picture', '!=', '')->whereNotNull('picture')->orderBy('created_at', 'desc')->paginate(30)
         );
         return view('gallery.index')->with($data);
@@ -41,35 +37,26 @@ class GalleryController extends Controller
         $this->validate($request, [
             'title' => 'required|max:255',
             'description' => 'required',
-            'picture' => 'image|nullable|max:1999',
+            'picture' => 'image|nullable|max:1999'
         ]);
-        
-        $filenameSimpan = 'noimage.png';
 
         if ($request->hasFile('picture')) {
-            $filenameWithExt = $request->file('picture')->getClientOriginalName();
-            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $fileNameWithExt = $request->file('picture')->getClientOriginalName();
+            $fileName = pathinfo($fileNameWithExt, PATHINFO_FILENAME);
             $extension = $request->file('picture')->getClientOriginalExtension();
-            $basename = uniqid() . time();
-            // $smallFilename = "small_{$basename}.{$extension}";
-            // $mediumFilename = "medium_{$basename}.{$extension}";
-            // $largeFilename = "large_{$basename}.{$extension}";
-            $filenameSimpan = "{$basename}.{$extension}";
-            $request->file('picture')->storeAs('public/images', $filenameSimpan);
+            $filenameSimpan = uniqid().time().".{$extension}";
+            $path = $request->file('picture')->storeAs('posts_image', $filenameSimpan);
         } else {
             $filenameSimpan = 'noimage.png';
         }
-        //dd($request->input());
+
         $post = new Post();
         $post->title = $request->input('title');
         $post->description = $request->input('description');
         $post->picture = $filenameSimpan;
-        // $post->small_picture = $smallFilename;
-        // $post->medium_picture = $mediumFilename;
-        // $post->large_picture = $largeFilename;
         $post->save();
 
-        return redirect()->route('gallery.index')->with('success', 'Data berhasil disimpan');
+        return redirect('gallery')->with('success', 'Successfully added new data to gallery');
     }
 
     /**
@@ -86,7 +73,7 @@ class GalleryController extends Controller
     public function edit(string $id)
     {
         $gallery = Post::findOrFail($id);
-        return view('gallery.edit', compact('gallery'));
+        return view('gallery.edit')->with('gallery', $gallery);
     }
 
     /**
@@ -94,36 +81,31 @@ class GalleryController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        $this->validate($request, [
-            'title' => 'required|max:255',
+        $gallery = Post::findOrFail($id);
+
+        $request->validate([
+            'title' => 'required|string|max:255',
             'description' => 'required',
-            'picture' => 'image|nullable|max:1999',
+            'picture' => 'image|nullable|max:1999'
         ]);
 
-        $post = Post::findOrFail($id);
-        $post->title = $request->input('title');
-        $post->description = $request->input('description');
+        $gallery->title = $request->input('title');
+        $gallery->description = $request->input('description');
 
-        // Cek apakah ada gambar baru yang di-upload
         if ($request->hasFile('picture')) {
-            // Hapus gambar lama dari storage
-            if ($post->picture != 'noimage.png' && Storage::exists('public/images/' . $post->picture)) {
-                Storage::delete('public/images/' . $post->picture);
+            if ($gallery->picture != 'noimage.png') {
+                Storage::delete('posts_image/' . $gallery->picture);
             }
-
-            // Proses gambar baru
-            $filenameWithExt = $request->file('picture')->getClientOriginalName();
-            $filename = pathinfo($filenameWithExt, PATHINFO_FILENAME);
+            $fileNameWithExt = $request->file('picture')->getClientOriginalName();
+            $fileName = pathinfo($fileNameWithExt, PATHINFO_FILENAME);
             $extension = $request->file('picture')->getClientOriginalExtension();
-            $basename = uniqid() . time();
-            $filenameSimpan = "{$basename}.{$extension}";
-            $request->file('picture')->storeAs('public/images', $filenameSimpan);
-
-            $post->picture = $filenameSimpan;
+            $filenameSimpan = uniqid().time().".{$extension}";
+            $path = $request->file('picture')->storeAs('posts_image', $filenameSimpan);
+            $gallery->picture = $filenameSimpan;
         }
 
-        $post->save();
-        return redirect()->route('gallery.index')->with('success', 'Data berhasil diperbarui');
+        $gallery->save();
+        return redirect('gallery')->with('success', 'Data berhasil diperbarui');
     }
 
     /**
@@ -131,14 +113,58 @@ class GalleryController extends Controller
      */
     public function destroy(string $id)
     {
-        $post = Post::findOrFail($id);
+        $gallery = Post::findOrFail($id);
+        $gallery->delete();
 
-        // Hapus gambar dari storage
-        if ($post->picture != 'noimage.png' && Storage::exists('public/images/' . $post->picture)) {
-            Storage::delete('public/images/' . $post->picture);
-        }
-
-        $post->delete();
-        return redirect()->route('gallery.index')->with('success', 'Data berhasil dihapus');
+        return redirect('gallery')->with('success', 'User deleted successfully.');
     }
+
+    /**
+ * @OA\Get (
+ *     path="/api/gallery",
+ *     tags={"gallery"},
+ *     summary="Returns a Sample API response",
+ *     description="A Sample API response to test out the API",
+ *     operationId="gallery",
+ *     @OA\Response(
+ *         response=200,
+ *         description="Successfully retrieved the data",
+ *         @OA\JsonContent(
+ *             example={
+ *                 "success": true,
+ *                 "message": "Successfully retrieved the data",
+ *                 "gallery": {
+ *                     "id": 1,
+ *                     "title": "Gallery PPW2",
+ *                     "description": "Gallery PPW2",
+ *                     "picture": "https://via.placeholder.com/150",
+ *                     "created_at": "2024-11-10T07:00:00.000000Z",
+ *                     "updated_at": "2024-11-10T07:00:00.000000Z"
+ *                 }
+ *             }
+ *         )
+ *     ),
+ *     @OA\Response(
+ *         response=404,
+ *         description="Data not found",
+ *         @OA\JsonContent(
+ *             example={
+ *                 "detail": "No gallery data found"
+ *             }
+ *         )
+ *     )
+ * )
+ */
+
+
+    public function gallery()
+    {
+        $data = array(
+            'success' => true,
+            'message' => 'Successfully retrieved the data',
+            'gallery' => Post::where('picture', '!=', '')->whereNotNull('picture')->orderBy('created_at', 'desc')->get()
+        );
+        return response()->json($data);
+    }
+
 }
